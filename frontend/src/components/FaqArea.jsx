@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '../api';
 
 export default function FaqArea({ categories }) {
   const [selectedCat, setSelectedCat] = useState("");
@@ -14,7 +15,7 @@ export default function FaqArea({ categories }) {
 
   useEffect(() => {
     if (selectedCat) {
-      fetch(`${import.meta.env.VITE_API_URL}/faq/${encodeURIComponent(selectedCat)}`)
+      fetch(`${API_URL}/faq/${encodeURIComponent(selectedCat)}`)
         .then(res => res.json())
         .then(data => {
           setFaqs(data.faqs || []);
@@ -38,7 +39,7 @@ export default function FaqArea({ categories }) {
 
   useEffect(() => {
     if (selectedQues && answer) {
-      fetch(`${import.meta.env.VITE_API_URL}/log`, {
+      fetch(`${API_URL}/log`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: selectedQues, category: selectedCat })

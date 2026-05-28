@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { API_URL } from '../api';
 
 const COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6366f1'];
 
@@ -9,7 +10,7 @@ export default function StatsModal({ onClose }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/stats`)
+    fetch(`${API_URL}/stats`)
       .then(res => res.json())
       .then(data => {
         if (data.queries) setQueries(data.queries);

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { API_URL } from '../api';
 
 export default function ChatArea() {
   const [messages, setMessages] = useState([]);
@@ -24,7 +25,7 @@ export default function ChatArea() {
 
     try {
       const apiKey = localStorage.getItem("infra_api_key") || "";
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/chat`, {
+      const res = await fetch(`${API_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: userMsg, api_key: apiKey })

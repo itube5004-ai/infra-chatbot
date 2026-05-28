@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar';
 import ChatArea from './components/ChatArea';
 import FaqArea from './components/FaqArea';
 import StatsModal from './components/StatsModal';
+import { API_URL } from './api';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('faq'); // 'faq' or 'chat'
@@ -21,7 +22,7 @@ export default function App() {
 
   useEffect(() => {
     // Initial fetch for categories
-    fetch(`${import.meta.env.VITE_API_URL}/categories`)
+    fetch(`${API_URL}/categories`)
       .then(res => res.json())
       .then(data => {
         if(data.categories) setCategories(data.categories);

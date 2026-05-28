@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { API_URL } from '../api';
 
 export default function Sidebar({ setCategories, onShowStats }) {
   const fileInputRef = useRef(null);
@@ -14,14 +15,14 @@ export default function Sidebar({ setCategories, onShowStats }) {
     formData.append("file", file);
     
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/upload`, {
+      const res = await fetch(`${API_URL}/upload`, {
         method: "POST",
         body: formData
       });
       const data = await res.json();
       if(data.status === 'success') {
         // Fetch categories to update UI
-        const catRes = await fetch(`${import.meta.env.VITE_API_URL}/categories`);
+        const catRes = await fetch(`${API_URL}/categories`);
         const catData = await catRes.json();
         setCategories(catData.categories || []);
       } else {

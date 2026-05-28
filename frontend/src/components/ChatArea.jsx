@@ -74,7 +74,7 @@ export default function ChatArea() {
         <div className="chat-input-box">
           <input 
             type="text" 
-            placeholder="예: VPN 연결이 안 돼요. 어떻게 해야 하나요?"
+            placeholder="문의 내용을 입력하세요."
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => {

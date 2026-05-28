@@ -608,7 +608,7 @@ with tab2:
                     st.markdown(msg["content"])
 
             # 새 입력 처리
-            if user_input := st.chat_input("예: VPN 연결이 안 돼요. 어떻게 해야 하나요?", key="chat_input_main"):
+            if user_input := st.chat_input("문의 내용을 입력하세요.", key="chat_input_main"):
                 # 사용자 메시지 출력 및 저장
                 with st.chat_message("user"):
                     st.markdown(user_input)

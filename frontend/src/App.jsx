@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatArea from './components/ChatArea';
 import FaqArea from './components/FaqArea';
+import StatsModal from './components/StatsModal';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('faq'); // 'faq' or 'chat'
   const [categories, setCategories] = useState([]);
+  const [showStats, setShowStats] = useState(false);
   
   // Admin State
   const [isAdmin, setIsAdmin] = useState(false);
@@ -57,12 +59,19 @@ export default function App() {
   return (
     <div className="app-container">
       {/* 관리자 모드일 때만 사이드바(왼쪽) 렌더링 */}
-      {isAdmin && <Sidebar setCategories={setCategories} />}
+      {isAdmin && <Sidebar setCategories={setCategories} onShowStats={() => setShowStats(true)} />}
       
       <div className="main-content" style={{ position: 'relative' }}>
         
-        {/* 우측 상단 관리자 모드 버튼 */}
-        <div style={{ position: 'absolute', top: '24px', right: '40px', zIndex: 10 }}>
+        {/* 우측 상단 버튼들 */}
+        <div style={{ position: 'absolute', top: '24px', right: '40px', zIndex: 10, display: 'flex', gap: '10px' }}>
+          <button 
+            className="tab-button" 
+            style={{ background: 'rgba(99, 102, 241, 0.15)', border: '1px solid rgba(99, 102, 241, 0.3)', color: '#a5b4fc' }}
+            onClick={() => setShowStats(true)}
+          >
+            📊 질문 통계 보기
+          </button>
           {!isAdmin ? (
             <button className="tab-button" onClick={() => setShowModal(true)}>
               ⚙️ 관리자 모드
@@ -169,6 +178,8 @@ export default function App() {
           )}
         </div>
       </div>
+      
+      {showStats && <StatsModal onClose={() => setShowStats(false)} />}
     </div>
   );
 }

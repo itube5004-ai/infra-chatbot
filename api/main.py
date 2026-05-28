@@ -107,6 +107,24 @@ async def chat(request: ChatRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+class LogRequest(BaseModel):
+    query: str
+    category: str
+
+@app.post("/log")
+async def log_query(request: LogRequest):
+    try:
+        db_path = os.path.join(os.path.dirname(__file__), "stats.db")
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO query_logs_v2 (query, category) VALUES (?, ?)", (request.query, request.category))
+        conn.commit()
+        conn.close()
+        return {"status": "success"}
+    except Exception as e:
+        print("Failed to log query:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/categories")
 async def get_categories():
     df = global_state["df"]

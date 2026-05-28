@@ -36,6 +36,16 @@ export default function FaqArea({ categories }) {
     }
   }, [selectedQues, faqs]);
 
+  useEffect(() => {
+    if (selectedQues && answer) {
+      fetch(`${import.meta.env.VITE_API_URL}/log`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: selectedQues, category: selectedCat })
+      }).catch(err => console.error("Failed to log FAQ selection:", err));
+    }
+  }, [selectedQues, answer, selectedCat]);
+
   if (categories.length === 0) {
     return (
       <div style={{color: 'var(--text-secondary)'}}>

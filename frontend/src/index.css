@@ -221,8 +221,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 .chat-bubble.user {
   align-self: flex-end;
-  background: rgba(99, 102, 241, 0.15);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: #6366f1; /* Vibrant solid premium indigo */
+  border: 1px solid #818cf8; /* Bright border highlight */
   border-bottom-right-radius: 4px;
   color: var(--text-primary);
 }

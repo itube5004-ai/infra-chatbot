@@ -389,7 +389,7 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid var(--glass-border);
   border-radius: 16px;
   padding: 32px;
-  width: 100%; /* Dynamic width scaling */
+  width: 400px; /* Default compact width for standard modals */
   max-width: 90%;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   display: flex;

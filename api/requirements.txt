@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+python-multipart
+pandas
+openpyxl
+langchain
+langchain_community
+langchain_openai
+langchain_text_splitters
+langchain_classic
+faiss-cpu
+rank-bm25
+pydantic

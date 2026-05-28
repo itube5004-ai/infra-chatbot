@@ -66,13 +66,15 @@ export default function App() {
         
         {/* 우측 상단 버튼들 */}
         <div style={{ position: 'absolute', top: '24px', right: '40px', zIndex: 10, display: 'flex', gap: '10px' }}>
-          <button 
-            className="tab-button" 
-            style={{ background: 'rgba(99, 102, 241, 0.15)', border: '1px solid rgba(99, 102, 241, 0.3)', color: '#a5b4fc' }}
-            onClick={() => setShowStats(true)}
-          >
-            📊 질문 통계 보기
-          </button>
+          {isAdmin && (
+            <button 
+              className="tab-button" 
+              style={{ background: 'rgba(99, 102, 241, 0.15)', border: '1px solid rgba(99, 102, 241, 0.3)', color: '#a5b4fc' }}
+              onClick={() => setShowStats(true)}
+            >
+              📊 질문 통계 보기
+            </button>
+          )}
           {!isAdmin ? (
             <button className="tab-button" onClick={() => setShowModal(true)}>
               ⚙️ 관리자 모드

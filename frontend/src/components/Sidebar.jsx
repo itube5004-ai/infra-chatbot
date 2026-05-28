@@ -1,9 +1,11 @@
 import React, { useRef, useState } from 'react';
+import StatsModal from './StatsModal';
 
 export default function Sidebar({ setCategories }) {
   const fileInputRef = useRef(null);
   const [apiKey, setApiKey] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [showStats, setShowStats] = useState(false);
   
   const handleUpload = async (e) => {
     const file = e.target.files[0];
@@ -71,6 +73,19 @@ export default function Sidebar({ setCategories }) {
           />
         </div>
       </div>
+      
+      <div className="sidebar-section">
+        <div className="section-label">📊 이용 통계</div>
+        <button 
+          className="tab-button" 
+          style={{ width: '100%', justifyContent: 'center' }}
+          onClick={() => setShowStats(true)}
+        >
+          📈 질문 통계 보기
+        </button>
+      </div>
+      
+      {showStats && <StatsModal onClose={() => setShowStats(false)} />}
       
       <div style={{fontSize: '0.8rem', color: '#64748b', lineHeight: 1.6, marginTop: '20px'}}>
         📌 <b style={{color: 'var(--accent-light)'}}>사용 방법</b><br/><br/>

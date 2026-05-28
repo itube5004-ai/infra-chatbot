@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import pandas as pd
 from typing import List, Optional
 import os
+import sqlite3
 
 from rag import load_excel_data, init_rag_chain
 
@@ -30,8 +31,23 @@ def reload_rag_chain():
     else:
         global_state["rag_chain"] = None
 
+def init_db():
+    db_path = os.path.join(os.path.dirname(__file__), "stats.db")
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS query_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            query TEXT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
 @app.on_event("startup")
 async def startup_event():
+    init_db()
     # Load default data if exists (Permanent Storage)
     default_path = os.path.join(os.path.dirname(__file__), "data.xlsx")
     if os.path.exists(default_path):
@@ -65,6 +81,17 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=400, detail="Data not loaded. Please upload a file first.")
         
     try:
+        # Log query to DB
+        db_path = os.path.join(os.path.dirname(__file__), "stats.db")
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO query_logs (query) VALUES (?)", (request.query,))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print("Failed to log query:", e)
+        
+    try:
         response = chain.invoke({"input": request.query})
         return {"answer": response["answer"]}
     except Exception as e:
@@ -92,3 +119,25 @@ async def get_faq_by_category(category: str):
             "contact": row['담당 부서 및 연락처']
         })
     return {"faqs": faqs}
+
+@app.get("/stats")
+async def get_stats():
+    try:
+        db_path = os.path.join(os.path.dirname(__file__), "stats.db")
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT query, COUNT(*) as count 
+            FROM query_logs 
+            GROUP BY query 
+            ORDER BY count DESC 
+            LIMIT 50
+        ''')
+        rows = cursor.fetchall()
+        conn.close()
+        
+        stats = [{"query": row[0], "count": row[1]} for row in rows]
+        return {"stats": stats}
+    except Exception as e:
+        print("Failed to fetch stats:", e)
+        return {"stats": []}

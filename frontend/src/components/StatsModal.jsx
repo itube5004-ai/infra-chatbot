@@ -34,8 +34,9 @@ export default function StatsModal({ onClose }) {
       csvRows.push(`${idx + 1},${categoryText},${queryText},${q.count}`);
     });
     
-    const csvContent = "\\uFEFF" + csvRows.join('\\n'); // Add BOM for Excel UTF-8
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const csvContent = csvRows.join('\r\n'); // Use Excel standard CRLF line endings
+    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]); // Standard UTF-8 BOM to prevent broken characters in Excel
+    const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;

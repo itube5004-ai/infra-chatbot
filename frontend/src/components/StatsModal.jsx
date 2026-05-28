@@ -12,12 +12,38 @@ export default function StatsModal({ onClose }) {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
+  // Dropdown states for Year, Month, Day
+  const [startYear, setStartYear] = useState('');
+  const [startMonth, setStartMonth] = useState('');
+  const [startDay, setStartDay] = useState('');
+  const [endYear, setEndYear] = useState('');
+  const [endMonth, setEndMonth] = useState('');
+  const [endDay, setEndDay] = useState('');
+
   const formatDate = (date) => {
     const yyyy = date.getFullYear();
     const mm = String(date.getMonth() + 1).padStart(2, '0');
     const dd = String(date.getDate()).padStart(2, '0');
     return `${yyyy}-${mm}-${dd}`;
   };
+
+  // Sync dropdown values to startDate
+  useEffect(() => {
+    if (startYear && startMonth && startDay) {
+      setStartDate(`${startYear}-${startMonth.padStart(2, '0')}-${startDay.padStart(2, '0')}`);
+    } else {
+      setStartDate('');
+    }
+  }, [startYear, startMonth, startDay]);
+
+  // Sync dropdown values to endDate
+  useEffect(() => {
+    if (endYear && endMonth && endDay) {
+      setEndDate(`${endYear}-${endMonth.padStart(2, '0')}-${endDay.padStart(2, '0')}`);
+    } else {
+      setEndDate('');
+    }
+  }, [endYear, endMonth, endDay]);
 
   useEffect(() => {
     let url = `${API_URL}/stats`;
@@ -45,6 +71,12 @@ export default function StatsModal({ onClose }) {
     let start = new Date();
     
     if (preset === 'all') {
+      setStartYear('');
+      setStartMonth('');
+      setStartDay('');
+      setEndYear('');
+      setEndMonth('');
+      setEndDay('');
       setStartDate('');
       setEndDate('');
       return;
@@ -58,8 +90,14 @@ export default function StatsModal({ onClose }) {
       start.setMonth(today.getMonth() - 3);
     }
     
-    setStartDate(formatDate(start));
-    setEndDate(formatDate(today));
+    // Set dropdown states
+    setStartYear(String(start.getFullYear()));
+    setStartMonth(String(start.getMonth() + 1));
+    setStartDay(String(start.getDate()));
+    
+    setEndYear(String(today.getFullYear()));
+    setEndMonth(String(today.getMonth() + 1));
+    setEndDay(String(today.getDate()));
   };
 
   const downloadCSV = () => {
@@ -86,6 +124,22 @@ export default function StatsModal({ onClose }) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const selectStyle = {
+    background: '#0f172a',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '8px',
+    padding: '6px 28px 6px 12px',
+    color: 'white',
+    fontSize: '0.85rem',
+    outline: 'none',
+    cursor: 'pointer',
+    appearance: 'none',
+    backgroundImage: `url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>")`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right 8px center',
+    backgroundSize: '16px'
   };
 
   return (
@@ -153,44 +207,67 @@ export default function StatsModal({ onClose }) {
             })}
           </div>
 
-          {/* Custom Date Inputs */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Custom Date Dropdowns */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 500 }}>직접 선택:</span>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => {
-                setFilterType('custom');
-                setStartDate(e.target.value);
-              }}
-              style={{
-                background: '#0f172a',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px',
-                padding: '6px 12px',
-                color: 'white',
-                fontSize: '0.85rem',
-                outline: 'none'
-              }}
-            />
+            
+            {/* Start Date */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <select 
+                value={startYear} 
+                onChange={(e) => { setFilterType('custom'); setStartYear(e.target.value); }}
+                style={selectStyle}
+              >
+                <option value="">년</option>
+                {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}년</option>)}
+              </select>
+              <select 
+                value={startMonth} 
+                onChange={(e) => { setFilterType('custom'); setStartMonth(e.target.value); }}
+                style={selectStyle}
+              >
+                <option value="">월</option>
+                {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>{m}월</option>)}
+              </select>
+              <select 
+                value={startDay} 
+                onChange={(e) => { setFilterType('custom'); setStartDay(e.target.value); }}
+                style={selectStyle}
+              >
+                <option value="">일</option>
+                {Array.from({length: 31}, (_, i) => i + 1).map(d => <option key={d} value={d}>{d}일</option>)}
+              </select>
+            </div>
+
             <span style={{ color: '#64748b' }}>~</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => {
-                setFilterType('custom');
-                setEndDate(e.target.value);
-              }}
-              style={{
-                background: '#0f172a',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px',
-                padding: '6px 12px',
-                color: 'white',
-                fontSize: '0.85rem',
-                outline: 'none'
-              }}
-            />
+
+            {/* End Date */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <select 
+                value={endYear} 
+                onChange={(e) => { setFilterType('custom'); setEndYear(e.target.value); }}
+                style={selectStyle}
+              >
+                <option value="">년</option>
+                {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}년</option>)}
+              </select>
+              <select 
+                value={endMonth} 
+                onChange={(e) => { setFilterType('custom'); setEndMonth(e.target.value); }}
+                style={selectStyle}
+              >
+                <option value="">월</option>
+                {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>{m}월</option>)}
+              </select>
+              <select 
+                value={endDay} 
+                onChange={(e) => { setFilterType('custom'); setEndDay(e.target.value); }}
+                style={selectStyle}
+              >
+                <option value="">일</option>
+                {Array.from({length: 31}, (_, i) => i + 1).map(d => <option key={d} value={d}>{d}일</option>)}
+              </select>
+            </div>
           </div>
         </div>
  

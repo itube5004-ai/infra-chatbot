@@ -36,9 +36,10 @@ def init_db():
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS query_logs (
+        CREATE TABLE IF NOT EXISTS query_logs_v2 (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             query TEXT,
+            category TEXT,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -81,18 +82,27 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=400, detail="Data not loaded. Please upload a file first.")
         
     try:
-        # Log query to DB
-        db_path = os.path.join(os.path.dirname(__file__), "stats.db")
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO query_logs (query) VALUES (?)", (request.query,))
-        conn.commit()
-        conn.close()
-    except Exception as e:
-        print("Failed to log query:", e)
-        
-    try:
         response = chain.invoke({"input": request.query})
+        
+        # Try to extract category from the retrieved context
+        category = "알 수 없음"
+        if "context" in response and len(response["context"]) > 0:
+            first_doc = response["context"][0].page_content
+            # first_doc starts with: 카테고리: [Category]\n질문: ...
+            if first_doc.startswith("카테고리:"):
+                category = first_doc.split("\n")[0].replace("카테고리:", "").strip()
+        
+        try:
+            # Log query to DB
+            db_path = os.path.join(os.path.dirname(__file__), "stats.db")
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO query_logs_v2 (query, category) VALUES (?, ?)", (request.query, category))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print("Failed to log query:", e)
+            
         return {"answer": response["answer"]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -126,18 +136,31 @@ async def get_stats():
         db_path = os.path.join(os.path.dirname(__file__), "stats.db")
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
+        # 1. Top queries
         cursor.execute('''
-            SELECT query, COUNT(*) as count 
-            FROM query_logs 
-            GROUP BY query 
+            SELECT query, category, COUNT(*) as count 
+            FROM query_logs_v2 
+            GROUP BY query, category 
             ORDER BY count DESC 
             LIMIT 50
         ''')
-        rows = cursor.fetchall()
+        query_rows = cursor.fetchall()
+        
+        # 2. Category distribution
+        cursor.execute('''
+            SELECT category, COUNT(*) as count 
+            FROM query_logs_v2 
+            GROUP BY category 
+            ORDER BY count DESC
+        ''')
+        category_rows = cursor.fetchall()
+        
         conn.close()
         
-        stats = [{"query": row[0], "count": row[1]} for row in rows]
-        return {"stats": stats}
+        queries = [{"query": row[0], "category": row[1], "count": row[2]} for row in query_rows]
+        categories = [{"name": row[0], "value": row[1]} for row in category_rows]
+        
+        return {"queries": queries, "categories": categories}
     except Exception as e:
         print("Failed to fetch stats:", e)
-        return {"stats": []}
+        return {"queries": [], "categories": []}

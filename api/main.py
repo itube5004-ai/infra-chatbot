@@ -32,8 +32,8 @@ def reload_rag_chain():
 
 @app.on_event("startup")
 async def startup_event():
-    # Load default data if exists
-    default_path = r"C:\Users\User\Downloads\0527_3\dummy_data.xlsx"
+    # Load default data if exists (Permanent Storage)
+    default_path = os.path.join(os.path.dirname(__file__), "data.xlsx")
     if os.path.exists(default_path):
         with open(default_path, "rb") as f:
             global_state["df"] = load_excel_data(f.read())

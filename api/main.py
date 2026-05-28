@@ -31,8 +31,15 @@ def reload_rag_chain():
     else:
         global_state["rag_chain"] = None
 
+def get_db_path():
+    import sys
+    if getattr(sys, 'frozen', False):
+        exe_dir = os.path.dirname(sys.executable)
+        return os.path.join(exe_dir, "stats.db")
+    return os.path.join(os.path.dirname(__file__), "stats.db")
+
 def init_db():
-    db_path = os.path.join(os.path.dirname(__file__), "stats.db")
+    db_path = get_db_path()
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute('''
@@ -94,7 +101,7 @@ async def chat(request: ChatRequest):
         
         try:
             # Log query to DB
-            db_path = os.path.join(os.path.dirname(__file__), "stats.db")
+            db_path = get_db_path()
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
             cursor.execute("INSERT INTO query_logs_v2 (query, category) VALUES (?, ?)", (request.query, category))
@@ -114,7 +121,7 @@ class LogRequest(BaseModel):
 @app.post("/log")
 async def log_query(request: LogRequest):
     try:
-        db_path = os.path.join(os.path.dirname(__file__), "stats.db")
+        db_path = get_db_path()
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute("INSERT INTO query_logs_v2 (query, category) VALUES (?, ?)", (request.query, request.category))
@@ -151,7 +158,7 @@ async def get_faq_by_category(category: str):
 @app.get("/stats")
 async def get_stats(start_date: Optional[str] = None, end_date: Optional[str] = None):
     try:
-        db_path = os.path.join(os.path.dirname(__file__), "stats.db")
+        db_path = get_db_path()
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         
@@ -167,7 +174,7 @@ async def get_stats(start_date: Optional[str] = None, end_date: Optional[str] = 
             
         # 1. Top queries
         sql_queries = f'''
-            SELECT query, category, COUNT(*) as count 
+            SELECT query, category, COUNT(*) as count, MAX(datetime(timestamp, '+9 hours')) as latest_time
             FROM query_logs_v2 
             WHERE 1=1 {query_filter}
             GROUP BY query, category 
@@ -190,10 +197,23 @@ async def get_stats(start_date: Optional[str] = None, end_date: Optional[str] = 
         
         conn.close()
         
-        queries = [{"query": row[0], "category": row[1], "count": row[2]} for row in query_rows]
+        queries = [{"query": row[0], "category": row[1], "count": row[2], "latest_time": row[3]} for row in query_rows]
         categories = [{"name": row[0], "value": row[1]} for row in category_rows]
         
         return {"queries": queries, "categories": categories}
     except Exception as e:
         print("Failed to fetch stats:", e)
         return {"queries": [], "categories": []}
+
+import sys
+if getattr(sys, 'frozen', False):
+    # PyInstaller bundle directory
+    bundle_dir = sys._MEIPASS
+else:
+    # Local directory
+    bundle_dir = os.path.dirname(os.path.abspath(__file__))
+
+dist_path = os.path.join(bundle_dir, "dist")
+if os.path.exists(dist_path):
+    from fastapi.staticfiles import StaticFiles
+    app.mount("/", StaticFiles(directory=dist_path, html=True), name="static")

@@ -104,14 +104,14 @@ export default function StatsModal({ onClose }) {
     if (queries.length === 0) return;
     
     // Create CSV content
-    const headers = ['순위', '카테고리', '질문 내용', '질문 횟수'];
+    const headers = ['순위', '카테고리', '질문 내용', '질문 횟수', '최근 질문 일시'];
     const csvRows = [headers.join(',')];
     
     queries.forEach((q, idx) => {
       // Escape quotes and commas
       const queryText = `"${q.query.replace(/"/g, '""')}"`;
       const categoryText = `"${q.category.replace(/"/g, '""')}"`;
-      csvRows.push(`${idx + 1},${categoryText},${queryText},${q.count}`);
+      csvRows.push(`${idx + 1},${categoryText},${queryText},${q.count},"${q.latest_time || ''}"`);
     });
     
     const csvContent = csvRows.join('\r\n'); // Use Excel standard CRLF line endings
@@ -316,33 +316,37 @@ export default function StatsModal({ onClose }) {
             <div style={{ maxHeight: '352px', overflowY: 'auto', background: '#0f172a', borderRadius: '12px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead style={{ position: 'sticky', top: 0, background: '#1e293b' }}>
-                  <tr style={{ color: '#94a3b8' }}>
-                    <th style={{ padding: '12px' }}>순위</th>
-                    <th style={{ padding: '12px' }}>카테고리</th>
-                    <th style={{ padding: '12px' }}>질문 내용</th>
-                    <th style={{ padding: '12px', textAlign: 'center' }}>질문 횟수</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {queries.map((q, index) => (
-                    <tr key={index} style={{ borderBottom: '1px solid #1e293b' }}>
-                      <td style={{ padding: '12px', color: '#a5b4fc', fontWeight: 'bold' }}>{index + 1}</td>
-                      <td style={{ padding: '12px' }}>
-                        <span style={{ background: '#475569', padding: '4px 8px', borderRadius: '4px', fontSize: '0.85rem', color: '#f1f5f9' }}>
-                          {q.category}
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px', color: '#e2e8f0' }}>{q.query}</td>
-                      <td style={{ padding: '12px', textAlign: 'center' }}>
-                        <span style={{ background: '#312e81', padding: '4px 12px', borderRadius: '12px', fontSize: '0.85rem', color: '#c7d2fe', fontWeight: 'bold' }}>
-                          {q.count}회
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                   <tr style={{ color: '#94a3b8' }}>
+                     <th style={{ padding: '12px' }}>순위</th>
+                     <th style={{ padding: '12px' }}>카테고리</th>
+                     <th style={{ padding: '12px' }}>질문 내용</th>
+                     <th style={{ padding: '12px', textAlign: 'center' }}>질문 횟수</th>
+                     <th style={{ padding: '12px' }}>최근 질문 일시</th>
+                   </tr>
+                 </thead>
+                 <tbody>
+                   {queries.map((q, index) => (
+                     <tr key={index} style={{ borderBottom: '1px solid #1e293b' }}>
+                       <td style={{ padding: '12px', color: '#a5b4fc', fontWeight: 'bold' }}>{index + 1}</td>
+                       <td style={{ padding: '12px' }}>
+                         <span style={{ background: '#475569', padding: '4px 8px', borderRadius: '4px', fontSize: '0.85rem', color: '#f1f5f9' }}>
+                           {q.category}
+                         </span>
+                       </td>
+                       <td style={{ padding: '12px', color: '#e2e8f0' }}>{q.query}</td>
+                       <td style={{ padding: '12px', textAlign: 'center' }}>
+                         <span style={{ background: '#312e81', padding: '4px 12px', borderRadius: '12px', fontSize: '0.85rem', color: '#c7d2fe', fontWeight: 'bold' }}>
+                           {q.count}회
+                         </span>
+                       </td>
+                       <td style={{ padding: '12px', color: '#94a3b8', fontSize: '0.85rem' }}>
+                         {q.latest_time || '-'}
+                       </td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </table>
+             </div>
             
           </div>
         )}

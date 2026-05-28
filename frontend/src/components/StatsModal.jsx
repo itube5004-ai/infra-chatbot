@@ -8,23 +8,65 @@ export default function StatsModal({ onClose }) {
   const [queries, setQueries] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filterType, setFilterType] = useState('all'); // 'all', '1w', '1m', '2m', '3m', 'custom'
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
+  const formatDate = (date) => {
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
 
   useEffect(() => {
-    fetch(`${API_URL}/stats`)
+    let url = `${API_URL}/stats`;
+    const params = new URLSearchParams();
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+
+    setLoading(true);
+    fetch(url)
       .then(res => res.json())
       .then(data => {
-        if (data.queries) setQueries(data.queries);
-        if (data.categories) setCategories(data.categories);
+        setQueries(data.queries || []);
+        setCategories(data.categories || []);
       })
       .catch(err => console.error("Failed to fetch stats:", err))
       .finally(() => setLoading(false));
-  }, []);
+  }, [startDate, endDate]);
+
+  const applyPreset = (preset) => {
+    setFilterType(preset);
+    const today = new Date();
+    let start = new Date();
+    
+    if (preset === 'all') {
+      setStartDate('');
+      setEndDate('');
+      return;
+    } else if (preset === '1w') {
+      start.setDate(today.getDate() - 7);
+    } else if (preset === '1m') {
+      start.setMonth(today.getMonth() - 1);
+    } else if (preset === '2m') {
+      start.setMonth(today.getMonth() - 2);
+    } else if (preset === '3m') {
+      start.setMonth(today.getMonth() - 3);
+    }
+    
+    setStartDate(formatDate(start));
+    setEndDate(formatDate(today));
+  };
 
   const downloadCSV = () => {
     if (queries.length === 0) return;
     
     // Create CSV content
-    const headers = ['순위', '카테고리', '질문 내용', '조회수'];
+    const headers = ['순위', '카테고리', '질문 내용', '질문 횟수'];
     const csvRows = [headers.join(',')];
     
     queries.forEach((q, idx) => {
@@ -68,6 +110,88 @@ export default function StatsModal({ onClose }) {
           >
             📥 엑셀(CSV) 다운로드
           </button>
+        </div>
+
+        {/* Filter Bar */}
+        <div style={{ 
+          background: 'rgba(255, 255, 255, 0.03)', 
+          border: '1px solid rgba(255, 255, 255, 0.08)', 
+          borderRadius: '12px', 
+          padding: '16px', 
+          marginBottom: '20px',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '16px'
+        }}>
+          {/* Preset Buttons */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {['all', '1w', '1m', '2m', '3m'].map((p) => {
+              const label = p === 'all' ? '전체' : p === '1w' ? '최근 1주일' : p === '1m' ? '최근 1개월' : p === '2m' ? '최근 2개월' : '최근 3개월';
+              const active = filterType === p;
+              return (
+                <button
+                  key={p}
+                  onClick={() => applyPreset(p)}
+                  style={{
+                    background: active ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'rgba(255, 255, 255, 0.05)',
+                    color: active ? 'white' : '#94a3b8',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '8px 16px',
+                    fontSize: '0.85rem',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    boxShadow: active ? '0 2px 8px rgba(99, 102, 241, 0.3)' : 'none'
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Custom Date Inputs */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 500 }}>직접 선택:</span>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => {
+                setFilterType('custom');
+                setStartDate(e.target.value);
+              }}
+              style={{
+                background: '#0f172a',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '8px',
+                padding: '6px 12px',
+                color: 'white',
+                fontSize: '0.85rem',
+                outline: 'none'
+              }}
+            />
+            <span style={{ color: '#64748b' }}>~</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => {
+                setFilterType('custom');
+                setEndDate(e.target.value);
+              }}
+              style={{
+                background: '#0f172a',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '8px',
+                padding: '6px 12px',
+                color: 'white',
+                fontSize: '0.85rem',
+                outline: 'none'
+              }}
+            />
+          </div>
         </div>
  
         {loading ? (

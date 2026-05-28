@@ -149,28 +149,43 @@ async def get_faq_by_category(category: str):
     return {"faqs": faqs}
 
 @app.get("/stats")
-async def get_stats():
+async def get_stats(start_date: Optional[str] = None, end_date: Optional[str] = None):
     try:
         db_path = os.path.join(os.path.dirname(__file__), "stats.db")
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
+        
+        # Build query filters
+        query_filter = ""
+        params = []
+        if start_date:
+            query_filter += " AND date(timestamp) >= ?"
+            params.append(start_date)
+        if end_date:
+            query_filter += " AND date(timestamp) <= ?"
+            params.append(end_date)
+            
         # 1. Top queries
-        cursor.execute('''
+        sql_queries = f'''
             SELECT query, category, COUNT(*) as count 
             FROM query_logs_v2 
+            WHERE 1=1 {query_filter}
             GROUP BY query, category 
             ORDER BY count DESC 
             LIMIT 50
-        ''')
+        '''
+        cursor.execute(sql_queries, params)
         query_rows = cursor.fetchall()
         
         # 2. Category distribution
-        cursor.execute('''
+        sql_categories = f'''
             SELECT category, COUNT(*) as count 
             FROM query_logs_v2 
+            WHERE 1=1 {query_filter}
             GROUP BY category 
             ORDER BY count DESC
-        ''')
+        '''
+        cursor.execute(sql_categories, params)
         category_rows = cursor.fetchall()
         
         conn.close()

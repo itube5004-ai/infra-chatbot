@@ -47,7 +47,7 @@ export default function StatsModal({ onClose }) {
 
   return (
     <div className="modal-overlay" style={{ zIndex: 100 }}>
-      <div className="modal-content" style={{ maxWidth: '800px', width: '90%' }}>
+      <div className="modal-content" style={{ maxWidth: '1050px', width: '95%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <div>
             <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
@@ -68,7 +68,7 @@ export default function StatsModal({ onClose }) {
             📥 엑셀(CSV) 다운로드
           </button>
         </div>
-
+ 
         {loading ? (
           <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
             데이터를 불러오는 중...
@@ -78,7 +78,7 @@ export default function StatsModal({ onClose }) {
             아직 누적된 질문 데이터가 없습니다. 질문을 입력해 보세요!
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="stats-grid-container">
             
             {/* Chart Area */}
             <div style={{ background: '#0f172a', padding: '20px', borderRadius: '12px' }}>
@@ -109,9 +109,9 @@ export default function StatsModal({ onClose }) {
                 </ResponsiveContainer>
               </div>
             </div>
-
+ 
             {/* Table Area */}
-            <div style={{ maxHeight: '300px', overflowY: 'auto', background: '#0f172a', borderRadius: '12px' }}>
+            <div style={{ maxHeight: '352px', overflowY: 'auto', background: '#0f172a', borderRadius: '12px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead style={{ position: 'sticky', top: 0, background: '#1e293b' }}>
                   <tr style={{ color: '#94a3b8' }}>
